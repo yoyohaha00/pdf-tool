@@ -1,0 +1,509 @@
+<Window x:Class="PdfTool.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:models="clr-namespace:PdfTool.Models"
+        xmlns:viewModels="clr-namespace:PdfTool.ViewModels"
+        mc:Ignorable="d"
+        Title="PDF Tool"
+        Width="980"
+        Height="700"
+        MinWidth="900"
+        MinHeight="640"
+        Background="#F4F7FB">
+    <Window.DataContext>
+        <viewModels:MainViewModel />
+    </Window.DataContext>
+
+    <Window.Resources>
+        <Style x:Key="NavButtonStyle" TargetType="Button">
+            <Setter Property="Margin" Value="0,0,12,0" />
+            <Setter Property="Padding" Value="18,10" />
+            <Setter Property="Background" Value="#EAF1FA" />
+            <Setter Property="Foreground" Value="#17324D" />
+            <Setter Property="BorderBrush" Value="#D2DEEE" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+
+        <Style x:Key="PanelStyle" TargetType="Border">
+            <Setter Property="Padding" Value="24" />
+            <Setter Property="CornerRadius" Value="16" />
+            <Setter Property="Background" Value="White" />
+            <Setter Property="BorderBrush" Value="#D8E1EF" />
+            <Setter Property="BorderThickness" Value="1" />
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="18">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <Border Padding="16"
+                Background="White"
+                BorderBrush="#D8E1EF"
+                BorderThickness="1">
+            <TextBlock FontSize="24"
+                       FontWeight="Bold"
+                       Foreground="#17324D"
+                       Text="PDF Tool" />
+        </Border>
+
+        <Border Grid.Row="1"
+                Margin="0,12,0,12"
+                Padding="12"
+                Background="White"
+                BorderBrush="#D8E1EF"
+                BorderThickness="1">
+            <StackPanel Orientation="Horizontal">
+                <Button Style="{StaticResource NavButtonStyle}"
+                        Command="{Binding ShowCountPanelCommand}"
+                        Content="Text Count" />
+                <Button Style="{StaticResource NavButtonStyle}"
+                        Command="{Binding ShowSplitPanelCommand}"
+                        Content="PDF Split" />
+                <Button Style="{StaticResource NavButtonStyle}"
+                        Margin="0"
+                        Command="{Binding ShowMergePanelCommand}"
+                        Content="PDF Merge" />
+            </StackPanel>
+        </Border>
+
+        <Border Grid.Row="2"
+                Style="{StaticResource PanelStyle}"
+                AllowDrop="True"
+                DragOver="ContentPanel_DragOver"
+                Drop="ContentPanel_Drop">
+            <Grid>
+                <Grid>
+                    <Grid.Style>
+                        <Style TargetType="Grid">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding CurrentPanel}" Value="{x:Static models:ToolPanel.Count}">
+                                    <Setter Property="Visibility" Value="Visible" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Grid.Style>
+
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <TextBlock FontSize="22"
+                               FontWeight="Bold"
+                               Foreground="#17324D"
+                               Text="Text Count" />
+
+                    <Grid Grid.Row="1" Margin="0,24,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Margin="0,8,12,0"
+                                   VerticalAlignment="Center"
+                                   Foreground="#60758C"
+                                   Text="Select PDF:" />
+                        <TextBox Grid.Column="1"
+                                 Height="34"
+                                 IsReadOnly="True"
+                                 Text="{Binding CountSourcePath}" />
+                        <Button Grid.Column="2"
+                                Width="88"
+                                Margin="12,0,0,0"
+                                Click="BrowseCountSource_Click"
+                                Content="Browse" />
+                    </Grid>
+
+                    <Button Grid.Row="2"
+                            Width="120"
+                            Height="38"
+                            Margin="0,24,0,0"
+                            HorizontalAlignment="Center"
+                            Command="{Binding CountWordsCommand}"
+                            Content="Count Text" />
+
+                    <TextBlock Grid.Row="3"
+                               Margin="0,18,0,0"
+                               HorizontalAlignment="Center"
+                               Foreground="#60758C"
+                               Text="Tip: Drag a PDF file onto this panel to load it quickly." />
+
+                    <Border Grid.Row="4"
+                            Margin="0,32,0,0"
+                            Padding="18"
+                            Background="#F7FAFD"
+                            BorderBrush="#D8E1EF"
+                            BorderThickness="1">
+                        <StackPanel>
+                            <TextBlock FontSize="16"
+                                       FontWeight="Bold"
+                                       Foreground="#17324D"
+                                       Text="Result" />
+                            <TextBlock Margin="0,14,0,0"
+                                       Foreground="#60758C"
+                                       Text="{Binding TotalCharacterSummary}" />
+                            <TextBlock Margin="0,8,0,0"
+                                       Foreground="#60758C">
+                                <Run Text="Chinese characters: " />
+                                <Run Text="{Binding CurrentStatistics.ChineseCharacterCount}" />
+                            </TextBlock>
+                            <TextBlock Margin="0,8,0,0"
+                                       Foreground="#60758C">
+                                <Run Text="English characters: " />
+                                <Run Text="{Binding CurrentStatistics.EnglishCharacterCount}" />
+                                <Run Text=", words: " />
+                                <Run Text="{Binding CurrentStatistics.EnglishWordCount}" />
+                            </TextBlock>
+                            <TextBlock Margin="0,8,0,0"
+                                       Foreground="#60758C">
+                                <Run Text="Pages: " />
+                                <Run Text="{Binding CurrentStatistics.PageCount}" />
+                            </TextBlock>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+
+                <Grid>
+                    <Grid.Style>
+                        <Style TargetType="Grid">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding CurrentPanel}" Value="{x:Static models:ToolPanel.Split}">
+                                    <Setter Property="Visibility" Value="Visible" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Grid.Style>
+
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <TextBlock FontSize="22"
+                               FontWeight="Bold"
+                               Foreground="#17324D"
+                               Text="PDF Split" />
+
+                    <Grid Grid.Row="1" Margin="0,24,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Margin="0,8,12,0"
+                                   VerticalAlignment="Center"
+                                   Foreground="#60758C"
+                                   Text="Select PDF:" />
+                        <TextBox Grid.Column="1"
+                                 Height="34"
+                                 IsReadOnly="True"
+                                 Text="{Binding SplitSourcePath}" />
+                        <Button Grid.Column="2"
+                                Width="88"
+                                Margin="12,0,0,0"
+                                Click="BrowseSplitSource_Click"
+                                Content="Browse" />
+                    </Grid>
+
+                    <TextBlock Grid.Row="2"
+                               Margin="0,24,0,0"
+                               Foreground="#60758C"
+                               Text="Split mode:" />
+
+                    <StackPanel Grid.Row="3" Margin="0,12,0,0">
+                        <StackPanel Orientation="Horizontal">
+                            <RadioButton GroupName="SplitMode"
+                                         IsChecked="True"
+                                         Checked="SplitByCount_Checked"
+                                         Content="Split every N pages"
+                                         VerticalAlignment="Center" />
+                            <TextBlock Margin="18,4,8,0"
+                                       Foreground="#60758C"
+                                       Text="N =" />
+                            <TextBox Width="70"
+                                     PreviewTextInput="NumericTextBox_PreviewTextInput"
+                                     LostFocus="SplitEveryNPagesTextBox_LostFocus"
+                                     DataObject.Pasting="NumericTextBox_Pasting"
+                                     Text="{Binding SplitEveryNPages}" />
+                        </StackPanel>
+
+                        <StackPanel Margin="0,14,0,0">
+                            <RadioButton GroupName="SplitMode"
+                                         Checked="SplitByRange_Checked"
+                                         Content="Split by page ranges" />
+                            <StackPanel Margin="28,10,0,0">
+                                <Grid Margin="0,0,0,8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="120" />
+                                        <ColumnDefinition Width="28" />
+                                        <ColumnDefinition Width="120" />
+                                        <ColumnDefinition Width="70" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox Height="34"
+                                             IsReadOnly="True"
+                                             HorizontalContentAlignment="Center"
+                                             VerticalContentAlignment="Center"
+                                             Text="Start" />
+                                    <TextBlock Grid.Column="1"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center"
+                                               Foreground="#60758C"
+                                               Text="-" />
+                                    <TextBox Grid.Column="2"
+                                             Height="34"
+                                             IsReadOnly="True"
+                                             HorizontalContentAlignment="Center"
+                                             VerticalContentAlignment="Center"
+                                             Text="End" />
+                                    <Button Grid.Column="3"
+                                            Width="52"
+                                            Margin="12,0,0,0"
+                                            Command="{Binding AddSplitRangeCommand}"
+                                            Content="+" />
+                                </Grid>
+
+                                <ScrollViewer MaxHeight="190"
+                                              VerticalScrollBarVisibility="Auto"
+                                              HorizontalScrollBarVisibility="Disabled">
+                                    <ItemsControl ItemsSource="{Binding SplitRangeItems}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Grid Margin="0,0,0,10">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="120" />
+                                                        <ColumnDefinition Width="28" />
+                                                        <ColumnDefinition Width="120" />
+                                                        <ColumnDefinition Width="70" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBox Height="34"
+                                                             HorizontalContentAlignment="Center"
+                                                             VerticalContentAlignment="Center"
+                                                             PreviewTextInput="NumericTextBox_PreviewTextInput"
+                                                             LostFocus="PositiveNumberTextBox_LostFocus"
+                                                             DataObject.Pasting="NumericTextBox_Pasting"
+                                                             Text="{Binding StartPage, UpdateSourceTrigger=PropertyChanged}" />
+                                                    <TextBlock Grid.Column="1"
+                                                               HorizontalAlignment="Center"
+                                                               VerticalAlignment="Center"
+                                                               Foreground="#60758C"
+                                                               Text="-" />
+                                                    <TextBox Grid.Column="2"
+                                                             Height="34"
+                                                             HorizontalContentAlignment="Center"
+                                                             VerticalContentAlignment="Center"
+                                                             PreviewTextInput="NumericTextBox_PreviewTextInput"
+                                                             LostFocus="PositiveNumberTextBox_LostFocus"
+                                                             DataObject.Pasting="NumericTextBox_Pasting"
+                                                             Text="{Binding EndPage, UpdateSourceTrigger=PropertyChanged}" />
+                                                    <Button Grid.Column="3"
+                                                            Width="52"
+                                                            Margin="12,0,0,0"
+                                                            Click="RemoveSplitRange_Click"
+                                                            Content="Del" />
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </ScrollViewer>
+                            </StackPanel>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <Grid Grid.Row="4" Margin="0,24,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Margin="0,8,12,0"
+                                   VerticalAlignment="Center"
+                                   Foreground="#60758C"
+                                   Text="Output folder:" />
+                        <TextBox Grid.Column="1"
+                                 Height="34"
+                                 IsReadOnly="True"
+                                 Text="{Binding SplitOutputFolder}" />
+                        <Button Grid.Column="2"
+                                Width="88"
+                                Margin="12,0,0,0"
+                                Click="BrowseOutputFolder_Click"
+                                Content="Select" />
+                    </Grid>
+
+                    <Button Grid.Row="5"
+                            Width="120"
+                            Height="38"
+                            Margin="0,24,0,0"
+                            HorizontalAlignment="Center"
+                            Click="Split_Click"
+                            Content="Start Split" />
+
+                    <TextBlock Grid.Row="6"
+                               Margin="0,18,0,0"
+                               HorizontalAlignment="Center"
+                               Foreground="#60758C"
+                               Text="Tip: Drag a PDF file onto this panel to set the split source." />
+                </Grid>
+
+                <Grid>
+                    <Grid.Style>
+                        <Style TargetType="Grid">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding CurrentPanel}" Value="{x:Static models:ToolPanel.Merge}">
+                                    <Setter Property="Visibility" Value="Visible" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Grid.Style>
+
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <TextBlock FontSize="22"
+                               FontWeight="Bold"
+                               Foreground="#17324D"
+                               Text="PDF Merge" />
+
+                    <TextBlock Grid.Row="1"
+                               Margin="0,24,0,12"
+                               Foreground="#60758C"
+                               Text="File list:" />
+
+                    <TextBlock Grid.Row="2"
+                               Margin="0,0,0,12"
+                               HorizontalAlignment="Left"
+                               Foreground="#60758C"
+                               Text="Tip: Drag one or more PDF files onto this panel to add them." />
+
+                    <ListBox Grid.Row="3"
+                             ItemsSource="{Binding Files}"
+                             SelectedItem="{Binding SelectedFile, Mode=TwoWay}"
+                             Background="#F7FAFD"
+                             BorderBrush="#D8E1EF"
+                             BorderThickness="1">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Border Margin="8,8,8,0"
+                                        Padding="10"
+                                        Background="White"
+                                        BorderBrush="#E3EBF5"
+                                        BorderThickness="1">
+                                    <DockPanel>
+                                        <TextBlock DockPanel.Dock="Right"
+                                                   Foreground="#245EA8"
+                                                   Text="{Binding IndexLabel}" />
+                                        <TextBlock Foreground="#17324D"
+                                                   Text="{Binding Name}" />
+                                    </DockPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+
+                    <StackPanel Grid.Row="4"
+                                Margin="0,16,0,0"
+                                Orientation="Horizontal">
+                        <Button Width="80"
+                                Click="AddFiles_Click"
+                                Content="Add" />
+                        <Button Width="80"
+                                Margin="10,0,0,0"
+                                Command="{Binding RemoveSelectedCommand}"
+                                Content="Remove" />
+                        <Button Width="54"
+                                Margin="10,0,0,0"
+                                Command="{Binding MoveUpCommand}"
+                                Content="Up" />
+                        <Button Width="54"
+                                Margin="10,0,0,0"
+                                Command="{Binding MoveDownCommand}"
+                                Content="Down" />
+                    </StackPanel>
+
+                    <Grid Grid.Row="5" Margin="0,24,0,0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Margin="0,8,12,0"
+                                       VerticalAlignment="Center"
+                                       Foreground="#60758C"
+                                       Text="Output:" />
+                            <TextBox Grid.Column="1"
+                                     Height="34"
+                                     IsReadOnly="True"
+                                     Text="{Binding MergeOutputPath}" />
+                            <Button Grid.Column="2"
+                                    Width="88"
+                                    Margin="12,0,0,0"
+                                    Click="BrowseMergeOutput_Click"
+                                    Content="Select" />
+                        </Grid>
+
+                        <Button Grid.Row="1"
+                                Width="120"
+                                Height="38"
+                                Margin="0,24,0,0"
+                                HorizontalAlignment="Center"
+                                Click="Merge_Click"
+                                Content="Merge PDF" />
+                    </Grid>
+                </Grid>
+            </Grid>
+        </Border>
+
+        <StatusBar Grid.Row="3"
+                   Margin="0,12,0,0"
+                   Background="White"
+                   BorderBrush="#D8E1EF"
+                   BorderThickness="1">
+            <StatusBarItem>
+                <TextBlock Text="{Binding StatusMessage}" />
+            </StatusBarItem>
+            <Separator />
+            <StatusBarItem>
+                <TextBlock Text="{Binding OutputPathMessage}" />
+            </StatusBarItem>
+            <Separator />
+            <StatusBarItem Width="240">
+                <ProgressBar Height="16"
+                             Minimum="0"
+                             Maximum="100"
+                             Value="{Binding ProgressValue}" />
+            </StatusBarItem>
+        </StatusBar>
+    </Grid>
+</Window>
