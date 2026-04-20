@@ -4,6 +4,7 @@ A lightweight Windows desktop PDF utility for counting, splitting, and merging P
 ![.NET](https://img.shields.io/badge/.NET-8-purple)![C#](https://img.shields.io/badge/language-C%23-blue)![License](https://img.shields.io/badge/license-MIT-green)
 
 ## Features
+![](assets/main.png)
 ### PDF Text Statistics
 - Chinese character count
 - English character count
